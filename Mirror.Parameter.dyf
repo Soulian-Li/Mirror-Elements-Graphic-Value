@@ -1,0 +1,89 @@
+<Workspace Version="1.3.0.875" X="-1675.30001932676" Y="-549.349346508628" zoom="1.78359936238281" ScaleFactor="1" Name="Mirror.Parameter" Description="In revit system, mirror is only able to mirror model geometry, but not paprameter. For instance, when i mirror the outlet design,  I still need to manually opposite the graphic parameter for elements symbols to complete the workflow.  The node is aim to make up for the Revit mirror capability," ID="8a527fcf-b4cb-4ed7-853d-679885357934" Category="My Custom Nodes">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="bfd923de-dfba-48a1-a860-95698140df34" type="PythonNodeModels.PythonNode" nickname="Set Mirror Parameter" x="1221.62854174668" y="498.393950367399" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>"""
+__author__ = 'Soulian Li'
+__Gmail__ = 'liang.li1104@gmail.com'
+__version__ = '1.0.0'
+__Date__ = '07.04.20'
+
+"""
+
+import clr
+import sys
+# import Revit API
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+# import Revit API UI
+clr.AddReference('RevitAPIUI')
+from Autodesk.Revit.UI import *
+# import Revit Services 
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager 
+# import ProtoGeometry 
+clr.AddReference('ProtoGeometry')
+from Autodesk.DesignScript.Geometry import *
+# get Revit's current Document file.
+doc = DocumentManager.Instance.CurrentDBDocument
+# get the current application 
+app = DocumentManager.Instance.CurrentUIApplication.Application
+#get the user interface application 
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+
+
+# Dynamo input
+elements = IN[0]
+Mparameter = IN[1]
+
+# Empty list
+value = []
+# loop over elements 
+for e in UnwrapElement(elements):
+    # look up parameter
+    p = e.GetParameters(Mparameter)
+    # start Revit transaction
+    TransactionManager.Instance.EnsureInTransaction(doc)
+    
+    # look up parameter
+    for i in p:
+    	# set parameter. 
+    	ii = i.AsDouble()
+    	value.append(ii)
+    	i.Set(-1*ii)
+    	# end Revit transaction 
+    TransactionManager.Instance.TransactionTaskDone()
+OUT = map(lambda x: x*-304.8, value)
+
+
+
+</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1884a915-d1be-4115-a233-1761329fea31" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1060.56276204404" y="460.409121662821" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="Elements" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="c24072cc-5b84-470c-9e8a-854c9507ba17" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1052.52954796323" y="556.063999984234" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="Parameter" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="a3428f78-332e-454f-8fd9-227755e02bd6" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1432.68060623584" y="499.411091728555" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Mirror Values" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="bfd923de-dfba-48a1-a860-95698140df34" start_index="0" end="a3428f78-332e-454f-8fd9-227755e02bd6" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="1884a915-d1be-4115-a233-1761329fea31" start_index="0" end="bfd923de-dfba-48a1-a860-95698140df34" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="c24072cc-5b84-470c-9e8a-854c9507ba17" start_index="0" end="bfd923de-dfba-48a1-a860-95698140df34" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-20.6142597198486" eyeY="22.3321437835693" eyeZ="99.6357269287109" lookX="20.6142597198486" lookY="-22.3321437835693" lookZ="-99.6357269287109" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
